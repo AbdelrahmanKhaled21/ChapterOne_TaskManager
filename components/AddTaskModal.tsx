@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+  Animated,
+  Keyboard,
+  Platform
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AddTaskModalProps {
@@ -18,6 +28,27 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [description, setDescription] = useState('');
   const [titleError, setTitleError] = useState('');
   const [shakeAnimation] = useState(new Animated.Value(0));
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+    };
+  }, []);
 
   const shakeInput = () => {
     Animated.sequence([
@@ -93,7 +124,12 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
         }}
       >
         <TouchableWithoutFeedback onPress={handleClose}>
-          <View className="flex-1 justify-center items-center p-4">
+          <View
+            className="flex-1 justify-center items-center p-4"
+            style={{
+              paddingBottom: Math.max(keyboardHeight - 100, 0) // Adjust for keyboard
+            }}
+          >
             <TouchableWithoutFeedback onPress={() => {}}>
               <View className="bg-gray-900 rounded-2xl p-6 w-full max-w-sm border border-gray-800">
                 <Text className="text-white text-2xl font-bold mb-6 text-center">
@@ -117,6 +153,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                       value={title}
                       onChangeText={handleTitleChange}
                       autoFocus
+                      returnKeyType="next"
                     />
                   </Animated.View>
 
@@ -135,6 +172,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   onChangeText={setDescription}
                   multiline
                   numberOfLines={3}
+                  returnKeyType="done"
+                  blurOnSubmit={true}
                 />
 
                 <View className="flex-row">
