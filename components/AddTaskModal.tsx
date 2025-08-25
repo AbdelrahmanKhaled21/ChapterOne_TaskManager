@@ -50,7 +50,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
       shakeInput();
       return;
     }
-    
+
     // Clear any previous errors
     setTitleError('');
     onAddTask(title.trim(), description.trim());
@@ -83,9 +83,9 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
       onRequestClose={handleClose}
       statusBarTranslucent={true}
     >
-      <View 
+      <View
         className="flex-1 bg-black bg-opacity-50"
-        style={{ 
+        style={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
           paddingLeft: insets.left,
@@ -108,8 +108,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   >
                     <TextInput
                       className={`p-4 rounded-xl text-lg border ${
-                        titleError 
-                          ? 'bg-red-900 border-red-500 text-white' 
+                        titleError
+                          ? 'bg-red-900 border-red-500 text-white'
                           : 'bg-gray-800 border-gray-700 text-white'
                       }`}
                       placeholder="Task title"
@@ -119,7 +119,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                       autoFocus
                     />
                   </Animated.View>
-                  
+
                   {titleError && (
                     <Text className="text-red-400 text-sm mt-2 ml-1">
                       {titleError}
@@ -137,7 +137,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   numberOfLines={3}
                 />
 
-                <View className="flex-row space-x-3">
+                <View className="flex-row">
                   <TouchableOpacity
                     className="flex-1 bg-gray-700 p-4 rounded-xl items-center"
                     onPress={handleClose}
@@ -148,7 +148,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    className={`flex-1 p-4 rounded-xl items-center ${
+                    className={`flex-1 p-4 rounded-xl items-center ml-3 ${
                       hasValidTitle ? 'bg-purple-600' : 'bg-gray-600'
                     }`}
                     onPress={handleSubmit}

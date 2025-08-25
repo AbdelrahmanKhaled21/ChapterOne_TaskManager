@@ -1,14 +1,62 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { Task } from '../types/task';
 
 interface TaskCardProps {
   task: Task;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  isDeleting?: boolean;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onToggle,
+  onDelete,
+  isDeleting = false
+}) => {
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+
+  const handleDelete = useCallback(() => {
+    // Start deletion animation
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 100,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onDelete(task.id);
+    });
+  }, [onDelete, task.id, slideAnim, opacityAnim]);
+
+  useEffect(() => {
+    if (isDeleting) {
+      // Slide out to the right and fade out
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 100,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Call onDelete after animation completes
+        onDelete(task.id);
+      });
+    }
+  }, [isDeleting, onDelete, task.id, slideAnim, opacityAnim]);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -19,9 +67,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete }) 
   };
 
   return (
-    <View className={`bg-gray-900 rounded-lg p-4 mb-3 border ${
-      task.completed ? 'border-green-600' : 'border-gray-800'
-    }`}>
+    <Animated.View
+      className={`bg-gray-900 rounded-lg p-4 mb-3 border ${
+        task.completed ? 'border-green-600' : 'border-gray-800'
+      }`}
+      style={{
+        transform: [{ translateX: slideAnim }],
+        opacity: opacityAnim,
+      }}
+    >
       <View className="flex-row items-start justify-between mb-2">
         <TouchableOpacity
           className="flex-1 flex-row items-start"
@@ -60,11 +114,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete }) 
 
         <TouchableOpacity
           className="ml-3 p-2"
-          onPress={() => onDelete(task.id)}
+          onPress={handleDelete}
         >
           <Text className="text-red-400 text-lg font-bold">×</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 };

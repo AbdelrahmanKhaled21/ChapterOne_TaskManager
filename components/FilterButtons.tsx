@@ -21,7 +21,7 @@ export const FilterButtons: React.FC<FilterButtonsProps> = ({
   };
 
   return (
-    <View className="flex-row justify-center space-x-3 mb-4">
+    <View className="flex-row justify-center mb-4">
       <TouchableOpacity
         className={`px-6 py-3 rounded-full border ${
           currentFilter === 'todo'
@@ -40,7 +40,7 @@ export const FilterButtons: React.FC<FilterButtonsProps> = ({
       </TouchableOpacity>
 
       <TouchableOpacity
-        className={`px-6 py-3 rounded-full border ${
+        className={`px-6 py-3 rounded-full border ml-4 ${
           currentFilter === 'completed'
             ? 'bg-purple-600 border-purple-600'
             : 'bg-gray-800 border-gray-700'
