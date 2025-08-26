@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Task, TaskManagerState } from '../types/task';
+import { ANIMATION_CONFIG, COLORS } from '../constants/animations';
 import { TaskCard } from './TaskCard';
 import { FilterButtons } from './FilterButtons';
 import { AddTaskModal } from './AddTaskModal';
@@ -23,6 +24,7 @@ export const TaskManager: React.FC = () => {
     filter: 'all'
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const fabPressAnim = useRef(new Animated.Value(1)).current;
 
   /**
    * Adds a new task to the task list
@@ -101,12 +103,30 @@ export const TaskManager: React.FC = () => {
     return `No ${state.filter} tasks found.`;
   }, [state.filter]);
 
+  const handleFabPressIn = () => {
+    Animated.spring(fabPressAnim, {
+      toValue: ANIMATION_CONFIG.SCALE_PRESS_FAB,
+      useNativeDriver: true,
+      tension: ANIMATION_CONFIG.TENSION,
+      friction: ANIMATION_CONFIG.FRICTION,
+    }).start();
+  };
+
+  const handleFabPressOut = () => {
+    Animated.spring(fabPressAnim, {
+      toValue: ANIMATION_CONFIG.SCALE_NORMAL,
+      useNativeDriver: true,
+      tension: ANIMATION_CONFIG.TENSION,
+      friction: ANIMATION_CONFIG.FRICTION,
+    }).start();
+  };
+
   return (
     <View className="flex-1 bg-black">
       {/* Header with safe area top padding */}
       <View
         className="p-4"
-        style={{ paddingTop: Math.max(insets.top + 16, 20) }}
+        style={{ paddingTop: Math.max(insets.top + ANIMATION_CONFIG.SAFE_AREA_OFFSET, ANIMATION_CONFIG.SAFE_AREA_MIN) }}
       >
         <Text className="text-3xl font-bold text-white mb-6 text-center">
           Task Manager
@@ -121,7 +141,7 @@ export const TaskManager: React.FC = () => {
       <ScrollView
         className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }} // Add bottom padding for FAB
+        contentContainerStyle={{ paddingBottom: ANIMATION_CONFIG.BOTTOM_PADDING }}
       >
         {getFilteredTasks.length === 0 ? (
           <View className="items-center justify-center py-8">
@@ -141,22 +161,32 @@ export const TaskManager: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* Floating Action Button with safe area bottom padding */}
-      <TouchableOpacity
-        className="absolute w-16 h-16 bg-purple-600 rounded-full items-center justify-center shadow-lg"
-        onPress={() => setIsModalVisible(true)}
+      {/* Floating Action Button with enhanced micro-interactions */}
+      <Animated.View
         style={{
-          bottom: Math.max(insets.bottom + 16, 20),
-          right: 24,
-          shadowColor: '#9333EA',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 8,
+          position: 'absolute',
+          bottom: Math.max(insets.bottom + ANIMATION_CONFIG.SAFE_AREA_OFFSET, ANIMATION_CONFIG.SAFE_AREA_MIN),
+          right: ANIMATION_CONFIG.RIGHT_MARGIN,
+          transform: [{ scale: fabPressAnim }],
         }}
       >
-        <Text className="text-white text-3xl font-bold">+</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          className="w-16 h-16 bg-purple-600 rounded-full items-center justify-center"
+          onPress={() => setIsModalVisible(true)}
+          onPressIn={handleFabPressIn}
+          onPressOut={handleFabPressOut}
+          activeOpacity={1}
+          style={{
+            shadowColor: COLORS.SHADOW_PURPLE,
+            shadowOffset: { width: 0, height: ANIMATION_CONFIG.SHADOW_OFFSET },
+            shadowOpacity: ANIMATION_CONFIG.SHADOW_OPACITY,
+            shadowRadius: ANIMATION_CONFIG.SHADOW_RADIUS,
+            elevation: ANIMATION_CONFIG.ELEVATION,
+          }}
+        >
+          <Text className="text-white text-3xl font-bold">+</Text>
+        </TouchableOpacity>
+      </Animated.View>
 
       {/* Add Task Modal */}
       <AddTaskModal
